@@ -47,7 +47,7 @@
         "githubOauth": {
           "secretsPathAmplifyAppId": "d3feuqtn3vkmsg",
           "deploymentBucketName": "amplify-repostats-prod-02945-deployment",
-          "s3Key": "amplify-builds/githubOauth-694543504a396e507331-build.zip"
+          "s3Key": "amplify-builds/githubOauth-2f523541714661442f67-build.zip"
         }
       },
       "api": {

@@ -145,9 +145,9 @@ const GITHUB_OAUTH_MUTATION = gql`
 // doing this as a side effect because I don't want to deal with dynamo api on lambda side
 const CREATE_GITHUB_PROFILE_MUTATION = gql`
   mutation HomeScreenCreateGithubProfileMutation(
-    $githubProfile: GithubProfile!
+    $input: CreateGithubProfileInput!
   ) {
-    createGithubProfile(input: $githubProfile) {
+    createGithubProfile(input: $input) {
       email
       githubName
       bearerToken
@@ -232,9 +232,19 @@ export default function StatsScreen(): JSX.Element {
 
       localStorage.setItem('bearerToken', githubOauth.bearerToken ?? '');
       localStorage.setItem('githubName', githubOauth.githubName ?? '');
+      console.log(githubOauth);
 
-      await createGithubProfileMutation({ variables: { input: githubOauth } });
-      navigate(`${userName}/${githubName}`);
+      await createGithubProfileMutation({
+        variables: {
+          input: {
+            bearerToken: githubOauth.bearerToken,
+            email: githubOauth.bearerToken,
+            githubName: githubOauth.githubName,
+          },
+        },
+      });
+      navigate(`/${userName}/${repoName}`);
+      window.location.href = window.location.href;
     })();
   }, []);
 
@@ -294,180 +304,180 @@ export default function StatsScreen(): JSX.Element {
             fileContents.push({ path: file.path, content: fileContent });
           })
         );
+      }
 
-        setLoadingMessage(null);
-        try {
-          S.load(
-            Object.fromEntries(
-              fileContents.map((content) => [content.path, content.content])
-            )
-          );
+      setLoadingMessage(null);
+      try {
+        S.load(
+          Object.fromEntries(
+            fileContents.map((content) => [content.path, content.content])
+          )
+        );
 
-          const programs = S('Program');
+        const programs = S('Program');
 
-          const numberOfTopLevelStatements = programs.children().length;
-          const numberOfFiles = programs.length;
-          const numberOfLines = programs
-            .map((p) => p.lines())
-            .reduce((acc, lines) => acc + lines, 0);
-          const mostLinesFiles = programs
-            .map<{ fileName: string; lineLength: number }>((pg) => ({
-              fileName: pg.fileName(),
-              lineLength: pg.lines(),
-            }))
-            .sort((a, b) => b.lineLength - a.lineLength)
-            .slice(0, 5);
+        const numberOfTopLevelStatements = programs.children().length;
+        const numberOfFiles = programs.length;
+        const numberOfLines = programs
+          .map((p) => p.lines())
+          .reduce((acc, lines) => acc + lines, 0);
+        const mostLinesFiles = programs
+          .map<{ fileName: string; lineLength: number }>((pg) => ({
+            fileName: pg.fileName(),
+            lineLength: pg.lines(),
+          }))
+          .sort((a, b) => b.lineLength - a.lineLength)
+          .slice(0, 5);
 
-          const numberOfImportDeclarations = S('ImportDeclaration').length;
-          const numberOfExportDeclarations = S(
-            'ExportDeclaration, ExportDefaultDeclaration'
-          ).length;
+        const numberOfImportDeclarations = S('ImportDeclaration').length;
+        const numberOfExportDeclarations = S(
+          'ExportDeclaration, ExportDefaultDeclaration'
+        ).length;
 
-          const variableNames = S('Identifier, JSXIdentifier').map(
-            (iden) => iden.text().split(':')[0]
-          );
+        const variableNames = S('Identifier, JSXIdentifier').map(
+          (iden) => iden.text().split(':')[0]
+        );
 
-          const longestVariableNames = [...new Set(variableNames)]
-            .sort((a, b) => b.length - a.length)
-            .slice(0, 5);
+        const longestVariableNames = [...new Set(variableNames)]
+          .sort((a, b) => b.length - a.length)
+          .slice(0, 5);
 
-          const nameLookup: Record<string, number> = {};
-          for (const name of variableNames) {
-            // not null check because of overwriting stuff like 'toString'
-            if (typeof nameLookup[name] !== 'number') nameLookup[name] = 1;
-            else nameLookup[name]++;
-          }
-
-          // most used variable names
-          const mostUsedVariables = Object.entries(nameLookup)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([variableName, timesUsed]) => ({ variableName, timesUsed }));
-
-          const functions = S('FunctionDeclaration, ArrowFunctionExpression');
-
-          const numberOfFunctions = functions.length;
-          const averageLinesFunction =
-            functions.map((fn) => fn.lines()).reduce((acc, fn) => acc + fn, 0) /
-            numberOfFunctions;
-
-          const functionsLines = functions.map<{
-            functionName: string;
-            lineLength: number;
-          }>((fn) => ({
-            functionName: fn.name().length === 0 ? '(anonymous)' : fn.name(),
-            lineLength: fn.lines(),
-          }));
-
-          // longest functions
-          const mostLinesFunctions = functionsLines
-            .sort((a, b) => b.lineLength - a.lineLength)
-            .slice(0, 5);
-
-          const numberOfAnonymousFunctions = functions
-            .map((fn) => fn.type() === 'ArrowFunctionExpression')
-            .filter((n) => n).length;
-
-          const numberOfAsyncFunctions = functions
-            .map((fn) => fn.attr('async'))
-            .filter((n) => n).length;
-
-          const numberOfFunctionsWithReturn = functions
-            .map(
-              (fn) =>
-                fn.children('BlockStatement').children('ReturnStatement').length
-            )
-            .filter((n) => n).length;
-
-          const binaryOperators = S('BinaryExpression').map((be) =>
-            be.attr('operator')
-          );
-
-          const operatorLookup: Record<string, number | undefined> = {};
-          for (const op of binaryOperators) {
-            if (operatorLookup[op] == null) operatorLookup[op] = 1;
-            else operatorLookup[op] = (operatorLookup[op] ?? 0) + 1;
-          }
-
-          const ifs = S('IfStatement');
-          const ifStatements = ifs.length;
-          const ifElseStatements = ifs.filter(
-            (f) => f.attr('alternate')?.type === 'IfStatement'
-          ).length;
-          const elseStatements = ifs.filter(
-            (f) => f.attr('alternate')?.type === 'BlockStatement'
-          ).length;
-          const forStatements = S('ForStatement').length;
-          const forInStatements = S('ForInStatement').length;
-          const forOfStatements = S('ForOfStatement').length;
-          const whileStatements = S('WhileStatement').length;
-          const doWhileStatements = S('DoWhileStatement').length;
-          const switchStatements = S('SwitchStatement').length;
-          const conditionalStatements = S('ConditionalExpression').length;
-
-          const numberOfJSXElements = S('JSXElement').length;
-          const numberOfJSXAttributes = S('JSXAttribute').length;
-          const numberOfDivs = S('JSXElement.div').length;
-
-          const stats = {
-            repoName: `${userName}/${repoName}`,
-            lastGeneratedBy: githubName ?? '(unknown)',
-            lastGeneratedAt: DateTime.now().toUTC().toISO(),
-            longestVariableNames,
-            mostLinesFunctions,
-            averageLinesFunction,
-            numberOfFunctions,
-            mostLinesFiles,
-            numberOfFiles,
-            numberOfLines,
-            numberOfTopLevelStatements,
-            numberOfImportDeclarations,
-            numberOfExportDeclarations,
-            mostUsedVariables,
-            numberOfAnonymousFunctions,
-            numberOfFunctionsWithReturn,
-            numberOfAsyncFunctions,
-            numberOfStatements: {
-              ifStatements,
-              ifElseStatements,
-              elseStatements,
-              forStatements,
-              forInStatements,
-              forOfStatements,
-              whileStatements,
-              doWhileStatements,
-              switchStatements,
-              conditionalStatements,
-            },
-            numberOfBinaryOperators: {
-              equalEqual: operatorLookup['=='] ?? 0,
-              equalEqualEqual: operatorLookup['==='] ?? 0,
-              notEqual: operatorLookup['!='] ?? 0,
-              notEqualEqual: operatorLookup['!=='] ?? 0,
-              lessThan: operatorLookup['<'] ?? 0,
-              lessThanEqual: operatorLookup['<='] ?? 0,
-              greaterThan: operatorLookup['>'] ?? 0,
-              greaterThanEqual: operatorLookup['>='] ?? 0,
-              plus: operatorLookup['+'] ?? 0,
-              minus: operatorLookup['-'] ?? 0,
-              times: operatorLookup['*'] ?? 0,
-              divide: operatorLookup['/'] ?? 0,
-            },
-            numberOfJSXElements,
-            numberOfJSXAttributes,
-            numberOfDivs,
-          };
-
-          setRepoStats(stats);
-          if (!hasAlreadyBeenCreated) {
-            await createRepoStatsMutation({ variables: { input: stats } });
-            return;
-          }
-
-          await updateRepoStatsMutation({ variables: { input: stats } });
-        } catch (e) {
-          console.log(e);
+        const nameLookup: Record<string, number> = {};
+        for (const name of variableNames) {
+          // not null check because of overwriting stuff like 'toString'
+          if (typeof nameLookup[name] !== 'number') nameLookup[name] = 1;
+          else nameLookup[name]++;
         }
+
+        // most used variable names
+        const mostUsedVariables = Object.entries(nameLookup)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map(([variableName, timesUsed]) => ({ variableName, timesUsed }));
+
+        const functions = S('FunctionDeclaration, ArrowFunctionExpression');
+
+        const numberOfFunctions = functions.length;
+        const averageLinesFunction =
+          functions.map((fn) => fn.lines()).reduce((acc, fn) => acc + fn, 0) /
+          numberOfFunctions;
+
+        const functionsLines = functions.map<{
+          functionName: string;
+          lineLength: number;
+        }>((fn) => ({
+          functionName: fn.name().length === 0 ? '(anonymous)' : fn.name(),
+          lineLength: fn.lines(),
+        }));
+
+        // longest functions
+        const mostLinesFunctions = functionsLines
+          .sort((a, b) => b.lineLength - a.lineLength)
+          .slice(0, 5);
+
+        const numberOfAnonymousFunctions = functions
+          .map((fn) => fn.type() === 'ArrowFunctionExpression')
+          .filter((n) => n).length;
+
+        const numberOfAsyncFunctions = functions
+          .map((fn) => fn.attr('async'))
+          .filter((n) => n).length;
+
+        const numberOfFunctionsWithReturn = functions
+          .map(
+            (fn) =>
+              fn.children('BlockStatement').children('ReturnStatement').length
+          )
+          .filter((n) => n).length;
+
+        const binaryOperators = S('BinaryExpression').map((be) =>
+          be.attr('operator')
+        );
+
+        const operatorLookup: Record<string, number | undefined> = {};
+        for (const op of binaryOperators) {
+          if (operatorLookup[op] == null) operatorLookup[op] = 1;
+          else operatorLookup[op] = (operatorLookup[op] ?? 0) + 1;
+        }
+
+        const ifs = S('IfStatement');
+        const ifStatements = ifs.length;
+        const ifElseStatements = ifs.filter(
+          (f) => f.attr('alternate')?.type === 'IfStatement'
+        ).length;
+        const elseStatements = ifs.filter(
+          (f) => f.attr('alternate')?.type === 'BlockStatement'
+        ).length;
+        const forStatements = S('ForStatement').length;
+        const forInStatements = S('ForInStatement').length;
+        const forOfStatements = S('ForOfStatement').length;
+        const whileStatements = S('WhileStatement').length;
+        const doWhileStatements = S('DoWhileStatement').length;
+        const switchStatements = S('SwitchStatement').length;
+        const conditionalStatements = S('ConditionalExpression').length;
+
+        const numberOfJSXElements = S('JSXElement').length;
+        const numberOfJSXAttributes = S('JSXAttribute').length;
+        const numberOfDivs = S('JSXElement.div').length;
+
+        const stats = {
+          repoName: `${userName}/${repoName}`,
+          lastGeneratedBy: githubName ?? '(unknown)',
+          lastGeneratedAt: DateTime.now().toUTC().toISO(),
+          longestVariableNames,
+          mostLinesFunctions,
+          averageLinesFunction,
+          numberOfFunctions,
+          mostLinesFiles,
+          numberOfFiles,
+          numberOfLines,
+          numberOfTopLevelStatements,
+          numberOfImportDeclarations,
+          numberOfExportDeclarations,
+          mostUsedVariables,
+          numberOfAnonymousFunctions,
+          numberOfFunctionsWithReturn,
+          numberOfAsyncFunctions,
+          numberOfStatements: {
+            ifStatements,
+            ifElseStatements,
+            elseStatements,
+            forStatements,
+            forInStatements,
+            forOfStatements,
+            whileStatements,
+            doWhileStatements,
+            switchStatements,
+            conditionalStatements,
+          },
+          numberOfBinaryOperators: {
+            equalEqual: operatorLookup['=='] ?? 0,
+            equalEqualEqual: operatorLookup['==='] ?? 0,
+            notEqual: operatorLookup['!='] ?? 0,
+            notEqualEqual: operatorLookup['!=='] ?? 0,
+            lessThan: operatorLookup['<'] ?? 0,
+            lessThanEqual: operatorLookup['<='] ?? 0,
+            greaterThan: operatorLookup['>'] ?? 0,
+            greaterThanEqual: operatorLookup['>='] ?? 0,
+            plus: operatorLookup['+'] ?? 0,
+            minus: operatorLookup['-'] ?? 0,
+            times: operatorLookup['*'] ?? 0,
+            divide: operatorLookup['/'] ?? 0,
+          },
+          numberOfJSXElements,
+          numberOfJSXAttributes,
+          numberOfDivs,
+        };
+
+        setRepoStats(stats);
+        if (!hasAlreadyBeenCreated) {
+          await createRepoStatsMutation({ variables: { input: stats } });
+          return;
+        }
+
+        await updateRepoStatsMutation({ variables: { input: stats } });
+      } catch (e) {
+        console.log(e);
       }
     })();
   }, [files, loading, shouldRegenerate]);
