@@ -1,0 +1,105 @@
+{
+  "name": "repo-stats",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@apollo/client": "^3.5.10",
+    "@apollo/react-hooks": "^4.0.0",
+    "@aws-sdk/credential-providers": "^3.112.0",
+    "@testing-library/jest-dom": "^5.16.3",
+    "@testing-library/react": "^12.1.4",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.4.1",
+    "@types/node": "^18.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "apollo-client": "^2.6.10",
+    "apollo-link": "^1.2.14",
+    "apollo-link-http": "^1.5.17",
+    "assert": "^2.0.0",
+    "aws-amplify": "^4.3.26",
+    "aws-appsync": "^4.1.5",
+    "aws-appsync-auth-link": "^3.0.7",
+    "browserify-fs": "^1.0.0",
+    "buffer": "^6.0.3",
+    "constants-browserify": "^1.0.0",
+    "eslint-visitor-keys": "1.3.0",
+    "graphql": "^16.3.0",
+    "immutability-helper": "^3.1.1",
+    "luxon": "^3.2.1",
+    "md5": "^2.3.0",
+    "nullthrows": "^1.1.1",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
+    "react": "^18.0.0",
+    "react-app-rewired": "^2.2.1",
+    "react-dom": "^18.0.0",
+    "react-helmet-async": "^1.3.0",
+    "react-router-dom": "^6.3.0",
+    "react-scripts": "5.0.0",
+    "readable-stream": "^4.2.0",
+    "stream-browserify": "^3.0.0",
+    "styled-components": "^5.3.5",
+    "subsecond": "^0.2.3",
+    "tslib": "^2.4.0",
+    "typescript": "^4.6.3",
+    "url": "^0.11.0",
+    "util": "^0.12.5",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/concat-stream": "^2.0.0",
+    "@types/diff": "^5.0.2",
+    "@types/from2": "^2.3.2",
+    "@types/gunzip-maybe": "^1.4.0",
+    "@types/luxon": "^3.2.0",
+    "@types/md5": "^2.3.2",
+    "@types/path-browserify": "^1.0.0",
+    "@types/styled-components": "^5.1.25",
+    "@types/tar-stream": "^2.2.2",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.2.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-config-airbnb-typescript": "^16.1.4",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.28.0",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "prettier": "^2.6.1",
+    "prettier-plugin-jsxattribute-sort": "^1.0.1"
+  },
+  "importSort": {
+    ".js, .jsx, .ts, .tsx": {
+      "style": "module",
+      "parser": "typescriptreact"
+    }
+  }
+}
