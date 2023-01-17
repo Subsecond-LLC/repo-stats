@@ -46,6 +46,13 @@ const Separator = styled.div`
   margin: 16px 0;
 `;
 
+const Link = styled.a`
+  text-decoration: none;
+
+  color: #1368e3;
+  margin-right: 12px;
+`;
+
 const ALL_REPO_STATS_FIELDS = gql`
   fragment AllRepoStatsFields on RepoStats {
     repoName
@@ -232,7 +239,6 @@ export default function StatsScreen(): JSX.Element {
 
       localStorage.setItem('bearerToken', githubOauth.bearerToken ?? '');
       localStorage.setItem('githubName', githubOauth.githubName ?? '');
-      console.log(githubOauth);
 
       await createGithubProfileMutation({
         variables: {
@@ -565,6 +571,14 @@ export default function StatsScreen(): JSX.Element {
               <button onClick={() => setShouldRegenerate(true)} type="button">
                 Regenerate
               </button>
+            </Card.SubPoint>
+            <Card.SubPoint>
+              Share link:{' '}
+              <Link
+                href={`https://stats.subsecond.app/${userName}/${repoName}`}
+              >
+                stats.subsecond.app/{userName}/{repoName}
+              </Link>
             </Card.SubPoint>
           </Card>
           <Card>
