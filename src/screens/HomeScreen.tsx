@@ -146,7 +146,6 @@ export default function HomeScreen(): JSX.Element {
   const [selectedRepo, setSelectedRepo] = useState<string>('');
 
   const { data: query } = useQuery(QUERY);
-  console.log(query);
 
   return (
     <Container>

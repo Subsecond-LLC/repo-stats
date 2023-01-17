@@ -529,14 +529,20 @@ export default function StatsScreen(): JSX.Element {
               enough unauthenticated github requests to download this entire
               repo. (Github only gives you 50 without signing in)
             </Card.SubPoint>
-
-            <ActionButton.Anchor
-              href={getOauthURL(`${userName}/${repoName}`)}
-              style={{ marginTop: '24px' }}
-            >
-              <ActionButton.Image src={github} />
-              <div style={{ width: '100%' }}>Sign in with Github</div>
-            </ActionButton.Anchor>
+            {!isAuthorized ? (
+              <ActionButton.Anchor
+                href={getOauthURL(`${userName}/${repoName}`)}
+                style={{ marginTop: '24px' }}
+              >
+                <ActionButton.Image src={github} />
+                <div style={{ width: '100%' }}>Sign in with Github</div>
+              </ActionButton.Anchor>
+            ) : (
+              <ActionButton disabled style={{ marginTop: '24px' }}>
+                <ActionButton.Image src={github} />
+                <div style={{ width: '100%' }}>Signing in, one sec...</div>
+              </ActionButton>
+            )}
           </Card>
         </Sections>
       ) : stats == null || loadingMessage != null ? (
