@@ -244,7 +244,7 @@ export default function StatsScreen(): JSX.Element {
         variables: {
           input: {
             bearerToken: githubOauth.bearerToken,
-            email: githubOauth.bearerToken,
+            email: githubOauth.email,
             githubName: githubOauth.githubName,
           },
         },
