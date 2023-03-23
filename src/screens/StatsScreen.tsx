@@ -53,6 +53,8 @@ const Link = styled.a`
   margin-right: 12px;
 `;
 
+// and more comments for testing
+
 const ALL_REPO_STATS_FIELDS = gql`
   fragment AllRepoStatsFields on RepoStats {
     repoName
