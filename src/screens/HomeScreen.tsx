@@ -277,6 +277,4 @@ export default function HomeScreen(): JSX.Element {
       </Sections>
     </Container>
   );
-
-  // another comment to ignore here.
 }
