@@ -147,7 +147,6 @@ export default function HomeScreen(): JSX.Element {
 
   const { data: query } = useQuery(QUERY);
 
-  // testing something pls ignore
   return (
     <Container>
       <TopBar />
