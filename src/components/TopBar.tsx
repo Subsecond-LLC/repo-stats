@@ -49,7 +49,6 @@ const Link = styled.a`
 
 export default function TopBar() {
   const navigate = useNavigate();
-  // maybe theres a better way to test but I don't know it.
 
   return (
     <TopBarContainer>
